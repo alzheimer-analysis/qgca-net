@@ -1,0 +1,95 @@
+# QGCA-Net 默认配置。数值对应论文 Table "Hyperparameters of QGCA-Net Selected Within Training Data"
+# 与 Implementation Details 一节。
+seed_list: [0, 1, 2, 3, 4]        # 每个配置训练 5 个随机种子，受试者得分对种子取平均
+device: auto
+output_dir: outputs
+
+data:
+  processed_dir: data/processed/daic_woz    # prepare_*.py 的输出目录
+  max_utterances: 256
+  num_workers: 4
+
+model:
+  name: qgca                      # qgca | qgca_speech | early_fusion | late_fusion | mlan | mult | tamfn | ttfnet | depaudionet | dmpf
+  d: 256                          # 隐层维度 d
+  gate_hidden: 128
+  cross_heads: 8
+  cross_layers: 2
+  attn_dropout: 0.1
+  ffn_dropout: 0.1
+  ffn_mult: 4
+  # 参与融合的模态：name -> {kind, group}；group 指质量指标/可用性掩码所属的物理通道（T/A/V）
+  modalities:
+    T: {kind: text, group: T}
+    A: {kind: wav2vec, group: A}
+    V: {kind: video, group: V}
+  # ---- 组件开关（消融/对照使用）----
+  gate_mode: gate_q               # gate_q（完整）| gate_content（无 q 输入）| none（无门控）| q_feature（无门控，q 作为输入特征）
+  fusion: cross_attn              # cross_attn | concat（去掉跨模态注意力）
+  directions: bidirectional       # bidirectional（6 个方向）| unidirectional（3 个方向，环形）
+  pooling: attentive              # attentive | mean
+  task: multi                     # multi | cls | reg（单任务）
+  modality_dropout: 0.15          # p_md
+  # ---- 单模态编码器 ----
+  text:
+    backbone: bert-base-uncased   # 中文: hfl/chinese-roberta-wwm-ext；跨语言: xlm-roberta-base
+    hidden: 768
+    finetune_last_layers: 2       # 只微调最后两层 Transformer
+    max_tokens: 64
+    encoder: transformer          # transformer（4 层 8 头 + 时间间隔相对位置编码）| bilstm（2 层）
+    n_layers: 4
+    n_heads: 8
+    lstm_layers: 2
+  speech:
+    encoder: wav2vec_gru          # wav2vec_gru | logmel_cnn_gru
+    in_dim: 768
+    gru_layers: 2
+    n_mels: 40
+  video:
+    encoder: vit_transformer      # vit_transformer（ViT/HOG+Transformer）| au_gru（AU/pose + GRU）
+    of_dim: 22                    # 17 AU 强度 + 3 头部姿态 + 2 视线
+    use_app: true                 # false: 仅 OpenFace 特征（跨语料/跨语言迁移）
+    app_dim: 768                  # ViT 嵌入维度；DAIC-WOZ 为 HOG+3D 地标维度（见 daic_woz.yaml）
+    app_proj_dim: 768             # DAIC-WOZ: HOG/地标线性投影到与 ViT 相同维度
+    n_layers: 2
+    n_heads: 8
+
+quality:
+  source: fidelity                # fidelity | behavioral | none | shuffled
+  tau: 0.1                        # 掩码阈值
+  # 凸组合权重（Eq. quality）；T: ASR 置信度；A: SNR, 削波, 带宽；V: 跟踪置信度, 清晰度, 光照
+  weights:
+    T: [1.0]
+    A: [0.50, 0.25, 0.25]
+    V: [0.50, 0.25, 0.25]
+  behavioral_weights: [1, 1, 1, 1, 1, 1]   # 仅用于"行为类 q"对照实验
+
+loss:
+  focal_gamma: 2.0
+  focal_alpha_pos: 0.70
+  huber_delta: 0.10               # 归一化到 [0,1] 的尺度上
+  lambda_cls: 1.0
+  lambda_reg: 0.5
+  lambda_ent: 0.05
+  lambda_adv: 0.0                 # 单语料实验为 0；跨语料训练为 0.1
+
+train:
+  epochs: 40
+  epochs_grid: [20, 30, 40]       # 训练轮数在训练集交叉验证中选择
+  warmup_epochs: 5
+  batch_size: 16
+  lr_pretrained: 1.0e-5
+  lr_new: 1.0e-3
+  weight_decay: 0.01
+  grad_clip: 1.0
+  amp: true
+
+augment:
+  text: {word_delete_p: 0.10, synonym_p: 0.10, synonym_file: null}
+  speech: {noise_std_max: 0.10, freq_mask: 8, time_mask: 30}
+  video: {crop_min: 0.8, frame_drop_p: 0.10}
+
+eval:
+  drop_modalities: []             # 评估时整体移除的物理通道，如 [A]
+  threshold: 0.5                  # 由交叉验证确定后写入
+  bootstrap: 10000

@@ -1,0 +1,30 @@
+# 迁移实验设置，由 scripts/run_transfer.py 读取。
+# DSH: 数据集专属严重度头；DAL: 域对抗学习（GRL + 域判别器，λ_adv = 0.1）。
+cross_corpus:                       # AVEC2014 <-> DAIC-WOZ
+  avec_to_daic:
+    source: avec2014
+    target: daic_woz
+    eval: classification            # DAIC-WOZ 留出集宏平均 F1（风险头用 BDI-II>=14 标签训练后直接应用）
+  daic_to_avec:
+    source: daic_woz
+    target: avec2014
+    eval: regression                # AVEC2014 测试集 RMSE（BDI-II 头在微调时拟合）
+  shared:
+    video_openface_only: true       # 两库共享的 OpenFace AU/姿态/视线
+    target_text_masked: true        # m_T = 0（AVEC2014 无文本）
+  adaptation_grid:
+    - {name: none,     dsh: false, dal: false}
+    - {name: dal_only, dsh: false, dal: true}
+    - {name: dsh_only, dsh: true,  dal: false}
+    - {name: dsh_dal,  dsh: true,  dal: true}
+  settings: [zero_shot, fine_tuned]
+
+cross_lingual:                      # DAIC-WOZ -> MPSC
+  source: daic_woz
+  target: mpsc
+  text_backbone: xlm-roberta-base   # 替代 BERT 与中文 RoBERTa
+  video_openface_only: true
+  settings: [zero_shot, fine_tuned]
+  zero_shot_subjects: all           # 零样本使用全部 100 名 MPSC 参与者
+  fine_tuned_subjects: outer_folds  # 微调使用 MPSC 嵌套 CV 的外层折，与域内结果同一批测试者
+  methods: [depaudionet, wav2vec_gru, qgca_speech, mult, qgca]

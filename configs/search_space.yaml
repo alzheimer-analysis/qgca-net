@@ -1,0 +1,42 @@
+# 超参数搜索空间。所有方法（含 QGCA-Net）共享相同的调参预算：24 个配置，围绕已发表设置抽取。
+budget: 24
+sampler_seed: 24
+
+# QGCA-Net 需要在训练数据内选择的项目：编码器、质量指标权重、tau、lambda_ent、p_md、注意力头数、
+# 训练轮数、判决阈值。编码器选择见 scripts/run_encoder_selection.py。
+qgca:
+  quality.tau: [0.05, 0.10, 0.20]
+  loss.lambda_ent: [0.01, 0.05, 0.10]
+  model.modality_dropout: [0.10, 0.15, 0.20]
+  model.cross_heads: [4, 8, 16]
+  quality.weights.A: [[0.50, 0.25, 0.25], [0.34, 0.33, 0.33], [0.60, 0.20, 0.20]]
+  quality.weights.V: [[0.50, 0.25, 0.25], [0.34, 0.33, 0.33], [0.60, 0.20, 0.20]]
+
+# 基线：围绕各自论文设置的候选值
+baselines:
+  common:
+    train.lr_new: [3.0e-4, 1.0e-3, 3.0e-3]
+    model.ffn_dropout: [0.1, 0.2, 0.3]
+    train.weight_decay: [0.001, 0.01, 0.05]
+  early_fusion:
+    model.d: [128, 256, 512]
+  late_fusion:
+    model.d: [128, 256, 512]
+  mlan:
+    baseline.hidden: [128, 256]
+    baseline.lstm_layers: [1, 2]
+  mult:
+    baseline.layers: [2, 3, 4]
+    baseline.heads: [4, 8]
+  tamfn:
+    baseline.heads: [4, 8]
+    baseline.layers: [1, 2, 3]
+  ttfnet:
+    baseline.heads: [4, 8]
+    baseline.layers: [2, 3, 4]
+  depaudionet:
+    baseline.channels: [64, 128, 256]
+    baseline.lstm_hidden: [128, 256]
+  dmpf:
+    baseline.shared_dim: [128, 256]
+    baseline.ortho_weight: [0.05, 0.1, 0.5]

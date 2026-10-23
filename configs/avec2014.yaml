@@ -1,0 +1,19 @@
+_base_: default.yaml
+
+dataset: avec2014
+data:
+  processed_dir: data/processed/avec2014
+
+model:
+  # AVEC2014 无转写：文本分支整体被掩码，仅使用语音与视频
+  modalities:
+    T: {kind: text, group: T}
+    A: {kind: wav2vec, group: A}
+    V: {kind: video, group: V}
+
+protocol:
+  select_split: dev               # 所有决策在 dev 分区上做
+  train_splits: [train]
+  final_train_splits: [train, dev]  # 选定后在 train+dev 上重训
+  test_split: test                # 100 条测试录音，仅评估一次
+  risk_threshold_bdi: 14

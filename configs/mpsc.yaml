@@ -1,0 +1,16 @@
+_base_: default.yaml
+
+dataset: mpsc
+data:
+  processed_dir: data/processed/mpsc
+
+model:
+  text:
+    backbone: hfl/chinese-roberta-wwm-ext
+
+protocol:
+  outer_folds: 5                  # 按诊断与年龄组分层
+  outer_repeats: 5                # 5 次不同随机划分
+  inner_folds: 4                  # 每个外层训练集内部的 4 折交叉验证
+  adolescent_age: [13, 19]
+  # 同一受试者的 6 段录音始终位于同一折；受试者得分 = 各段得分、各重复与各种子的平均

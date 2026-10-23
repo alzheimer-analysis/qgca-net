@@ -1,0 +1,19 @@
+# 混杂对照（Table: Confound Controls）。评估集：DAIC-WOZ 留出集与 MPSC；
+# 另在 5 种扰动条件下取平均（见 robustness.yaml）。
+variants:
+  gate_free:
+    model.gate_mode: none
+  gate_free_fidelity_q_as_features:
+    model.gate_mode: q_feature
+    quality.source: fidelity
+  gate_free_behavioral_q_as_features:
+    model.gate_mode: q_feature
+    quality.source: behavioral
+  qgca_content_only_gate:
+    model.gate_mode: gate_content
+  qgca_fidelity_q_shuffled:          # 会话内打乱 q：保留分布，破坏与退化片段的对齐
+    quality.source: shuffled
+  qgca_behavioral_q:
+    quality.source: behavioral
+  qgca_fidelity_q:                   # 所提方法
+    quality.source: fidelity

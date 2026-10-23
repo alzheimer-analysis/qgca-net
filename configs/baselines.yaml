@@ -1,0 +1,11 @@
+# 对比方法的默认结构超参数（围绕原论文设置；调参预算见 search_space.yaml）。
+# 使用方式: python scripts/run_experiment.py --config configs/daic_woz.yaml --extra configs/baselines.yaml --set model.name=mult
+baseline:
+  hidden: 256
+  lstm_layers: 1
+  layers: 2
+  heads: 8
+  channels: 128
+  lstm_hidden: 256
+  shared_dim: 256
+  ortho_weight: 0.1

@@ -1,0 +1,18 @@
+_base_: default.yaml
+
+dataset: daic_woz
+data:
+  processed_dir: data/processed/daic_woz
+
+model:
+  text:
+    backbone: bert-base-uncased
+  video:
+    # DAIC-WOZ 不发布原始视频：用 HOG(4464) + 3D 地标(204) 描述子经线性投影代替 ViT 嵌入
+    app_dim: 4668
+    app_proj_dim: 768
+
+protocol:
+  cv_folds: 5                     # 训练集 107 例上的分层 5 折交叉验证
+  eval_splits: [dev, test]        # 留出集 H = dev + test（82 例，26 例抑郁）
+  report_dev_only: true

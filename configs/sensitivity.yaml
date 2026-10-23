@@ -1,0 +1,14 @@
+# DAIC-WOZ 训练集 5 折交叉验证上的超参数敏感性扫描（不涉及留出集）。
+sweeps:
+  modality_dropout:
+    key: model.modality_dropout
+    values: [0.0, 0.05, 0.10, 0.15, 0.20, 0.30, 0.40]
+  entropy_weight:
+    key: loss.lambda_ent
+    values: [0.0, 0.01, 0.05, 0.10, 0.20, 0.50, 1.0]
+  mask_threshold:
+    key: quality.tau
+    values: [0.0, 0.05, 0.10, 0.15, 0.20, 0.30, 0.40]
+  attention_heads:
+    key: model.cross_heads
+    values: [1, 2, 4, 8, 16]

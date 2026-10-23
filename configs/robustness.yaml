@@ -1,0 +1,9 @@
+# 在 DAIC-WOZ 留出集上对已训练模型施加的 5 种扰动。
+# 扰动对抑郁/健康受试者一视同仁，因此扰动下的收益不可能来自标签信息。
+conditions:
+  clean: {}
+  missing_text:  {kind: drop_modality, group: T}
+  missing_audio: {kind: drop_modality, group: A}
+  missing_video: {kind: drop_modality, group: V}
+  video_occlusion_30: {kind: video_occlusion, ratio: 0.30}   # 随机遮挡 30% 视频帧
+  speech_noise_10db:  {kind: speech_noise, snr_db: 10.0}     # 语音加白噪声，SNR 10 dB

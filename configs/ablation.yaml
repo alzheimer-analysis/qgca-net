@@ -1,0 +1,25 @@
+# 消融变体（Table: Ablation Study）。键为 dotted 配置补丁，由 scripts/run_variants.py 读取。
+# 这些配置在评估前固定，其结果不用于修改所提模型。
+variants:
+  full: {}
+  no_quality_gating:                 # 去掉门控（及基于 q 的阈值掩码），仅保留"技术性缺失"掩码
+    model.gate_mode: none
+  no_quality_input:                  # 门控保留，但不输入 q（内容门控）
+    model.gate_mode: gate_content
+  no_cross_modal_attention:          # 以拼接代替跨模态注意力
+    model.fusion: concat
+  unidirectional_attention:          # 仅 3 个方向
+    model.directions: unidirectional
+  no_entropy_regularizer:
+    loss.lambda_ent: 0.0
+  no_modality_dropout:
+    model.modality_dropout: 0.0
+  no_multi_task_cls:                 # 单任务：仅分类
+    model.task: cls
+    loss.lambda_reg: 0.0
+  no_multi_task_reg:                 # 单任务：仅回归
+    model.task: reg
+    loss.lambda_cls: 0.0
+    loss.lambda_ent: 0.0
+  mean_pooling:
+    model.pooling: mean
